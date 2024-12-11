@@ -70,9 +70,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: woffee/wis_club_api:${{ github.sha }} # Uses the Git SHA for tagging, change 'woffee' to your DockerHub username
+          tags: sso92327/wis_club_api:${{ github.sha }} # Uses the Git SHA for tagging, change 'woffee' to your DockerHub username
           platforms: linux/amd64,linux/arm64 # Multi-platform support
-          cache-from: type=registry,ref=woffee/wis_club_api:cache # change 'woffee' to your DockerHub username
+          cache-from: type=registry,ref=sso92327/wis_club_api:cache # change 'woffee' to your DockerHub username
           cache-to: type=inline,mode=max
           
       # - name: Scan the Docker image
