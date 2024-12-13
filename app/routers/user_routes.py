@@ -36,6 +36,8 @@ from app.services.email_service import EmailService
 
 #here
 from fastapi import Query 
+from enum import Enum
+from app.models.user_model import UserRole
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -87,7 +89,7 @@ async def search_users(
     request: Request, 
     nickname: str = Query(None, description = "Search by user's nickname."),
     email: str = Query(None, description = "Search by user's email."),
-    role: str = Query(None, description = "Search by user's role."),
+    role: UserRole = Query(None, description = "Search by user's role."),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
     skip: int = Query(0, description="Number of records to skip (pagination)"),
@@ -104,7 +106,10 @@ async def search_users(
         user = await UserService.get_by_email(db, email)
         if user:
             users = [user]
-    
+    if role:
+        role_users = await UserService.get_by_role(db, role)
+        if role_users:
+            users.extend = [role_users]
     
     if not users:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

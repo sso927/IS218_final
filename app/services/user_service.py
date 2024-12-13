@@ -49,6 +49,14 @@ class UserService:
     async def get_by_email(cls, session: AsyncSession, email: str) -> Optional[User]:
         return await cls._fetch_user(session, email=email)
 
+    @classmethod 
+    async def get_by_role(cls, session: AsyncSession, role: str) -> Optional[User]:
+        role_enum = UserRole[role.upper()]
+        result = await session.execute(select(User).filter(User.role == role_enum))
+        user = result.scalars().all()
+        return user 
+    
+
     @classmethod
     async def create(cls, session: AsyncSession, user_data: Dict[str, str], email_service: EmailService) -> Optional[User]:
         try:
