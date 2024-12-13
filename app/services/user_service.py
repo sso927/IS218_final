@@ -16,6 +16,9 @@ from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 import logging
 
+from datetime import date
+
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
@@ -55,6 +58,12 @@ class UserService:
         user = result.scalars().all()
         return user 
     
+
+    @classmethod
+    async def get_by_date(cls, db:AsyncSession, start_date: date, end_date: date):
+        stmt = select(User).filter(User.created_at >= start_date, User.created_at <= end_date)
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @classmethod
     async def create(cls, session: AsyncSession, user_data: Dict[str, str], email_service: EmailService) -> Optional[User]:

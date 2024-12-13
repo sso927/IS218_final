@@ -37,6 +37,8 @@ from app.services.email_service import EmailService
 from fastapi import Query 
 from enum import Enum
 from app.models.user_model import UserRole
+from datetime import date, datetime
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -153,72 +155,6 @@ async def search_users(
         links = pagination_links
     )
 
-@router.get("/users/date-range", response_model=UserResponse,tags=["User Management Requires (Admin or Manager Roles)"])
-async def filter_by_date(
-    request: Request, 
-    start_date: str = Query(None, description = "Insert the start date in the format: YYYY-MM-DD."),
-    end_date: str = Query(None, description = "Insert the end date in the format: YYYY-MM-DD."),
-    db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
-    skip: int = Query(0, description="Number of records to skip (pagination)"),
-    limit: int = Query(10, description="Number of records to return (pagination)")
-):
-
-    if start_date:
-        try:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-        except ValueError:
-            raise HTTPException(status_code = 400, detail = "Invalid start date format.")
-        
-    if end_date:
-        try:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-        except ValueError:
-            raise HTTPException(status_code = 400, detail = "Invalid end date format.")
-        
-    if start_date and end_date and start_date > end_date:
-        raise HTTPException(status_code = 400, detail = "Start date cannot be after the end date.")
-    
-    users = await UserService.get_by_date(db, start_date, end_date)
-
-    if not users:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = "No users created within that range.")
-
-    page = skip // limit + 1
-    size = len(user_responses)
-    total_users = len(users)
-    pagination_links = generate_pagination_links(request, skip, limit, total_users)
-
-    user_responses = [
-        UserResponse.model_construct(
-            id=user.id,
-            nickname=user.nickname,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            bio=user.bio,
-            profile_picture_url=user.profile_picture_url,
-            github_profile_url=user.github_profile_url,
-            linkedin_profile_url=user.linkedin_profile_url,
-            role=user.role,
-            email=user.email,
-            last_login_at=user.last_login_at,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            links=create_user_links(user.id, request)
-        )
-        for user in users
-    ]
-
-
-    return UserListResponse(
-        items=user_responses, 
-        total = total_users,
-        page = page,
-        size = size,
-        links = pagination_links
-    )
-
-
 @router.put("/users/{user_id}", response_model=UserResponse, name="update_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
     """
@@ -330,6 +266,75 @@ async def list_users(
         page=skip // limit + 1,
         size=len(user_responses),
         links=pagination_links  # Ensure you have appropriate logic to create these links
+    )
+
+
+
+
+@router.get("/users/date", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+async def filter_by_date(
+    request: Request, 
+    start_date: str = Query(None, description = "Insert the start date in the format: YYYY-MM-DD."),
+    end_date: str = Query(None, description = "Insert the end date in the format: YYYY-MM-DD."),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
+    skip: int = Query(0, description="Number of records to skip (pagination)"),
+    limit: int = Query(10, description="Number of records to return (pagination)")
+):
+
+    if start_date:
+        try:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code = 400, detail = "Invalid start date format.")
+        
+    if end_date:
+        try:
+            end_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code = 400, detail = "Invalid end date format.")
+        
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(status_code = 400, detail = "Start date cannot be after the end date.")
+    
+    users = await UserService.get_by_date(db, start_date, end_date)
+
+    if not users:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = "No users created within that range.")
+
+    
+    user_responses = [
+        UserResponse.model_construct(
+            id=user.id,
+            nickname=user.nickname,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            bio=user.bio,
+            profile_picture_url=user.profile_picture_url,
+            github_profile_url=user.github_profile_url,
+            linkedin_profile_url=user.linkedin_profile_url,
+            role=user.role,
+            email=user.email,
+            last_login_at=user.last_login_at,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            links=create_user_links(user.id, request)
+        )
+        for user in users
+    ]
+
+    page = skip // limit + 1
+    size = len(user_responses)
+    total_users = len(users)
+    pagination_links = generate_pagination_links(request, skip, limit, total_users)
+
+
+    return UserListResponse(
+        items=user_responses, 
+        total = total_users,
+        page = page,
+        size = size,
+        links = pagination_links
     )
 
 
