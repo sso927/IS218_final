@@ -34,7 +34,6 @@ from app.utils.link_generation import create_user_links, generate_pagination_lin
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
 
-#here
 from fastapi import Query 
 from enum import Enum
 from app.models.user_model import UserRole
@@ -153,6 +152,8 @@ async def search_users(
         size = size,
         links = pagination_links
     )
+
+
 
 @router.put("/users/{user_id}", response_model=UserResponse, name="update_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
