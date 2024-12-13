@@ -126,6 +126,11 @@ async def search_users(
     ]
 
 
+    page = skip // limit + 1
+    size = len(user_responses)
+    total_users = len(users)
+    pagination_links = generate_pagination_links(request, skip, limit, total_users)
+
     return UserListResponse(
         items=user_responses, 
         total = total_users,
