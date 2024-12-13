@@ -101,16 +101,15 @@ async def search_users(
     if nickname:
         user = await UserService.get_by_nickname(db, nickname)
         if user:
-            users = [user]
+            users.append(user)
     if email:
         user = await UserService.get_by_email(db, email)
         if user:
-            users = [user]
+            users.append(user)
     if role:
         role_users = await UserService.get_by_role(db, role)
         if role_users:
-            users.extend = [role_users]
-    
+            users.extend(role_users)
     if not users:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 

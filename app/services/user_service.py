@@ -50,9 +50,8 @@ class UserService:
         return await cls._fetch_user(session, email=email)
 
     @classmethod 
-    async def get_by_role(cls, session: AsyncSession, role: str) -> Optional[User]:
-        role_enum = UserRole[role.upper()]
-        result = await session.execute(select(User).filter(User.role == role_enum))
+    async def get_by_role(cls, session: AsyncSession, role: UserRole) -> Optional[User]:
+        result = await session.execute(select(User).filter(User.role == role))
         user = result.scalars().all()
         return user 
     
