@@ -33,6 +33,10 @@ from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
+
+#here
+from fastapi import Query 
+
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
@@ -77,6 +81,59 @@ async def get_user(user_id: UUID, request: Request, db: AsyncSession = Depends(g
 
 # This approach not only ensures that the API is secure and efficient but also promotes a better client
 # experience by adhering to REST principles and providing self-discoverable operations.
+
+@router.put("/users/search", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+async def search_users(
+    request: Request, 
+    nickname: str = Query(None, description = "Search by user's nickname."),
+    email: str = Query(None, description = "Search by user's email."),
+    role: str = Query(None, description = "Search by user's role."),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
+    skip: int = Query(0, description="Number of records to skip (pagination)"),
+    limit: int = Query(10, description="Number of records to return (pagination)")
+    
+):
+    
+    users = []
+    if nickname:
+        user = await UserService.get_by_nickname(db, nickname)
+        if user:
+            users = [user]
+    
+    
+    if not users:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user_responses = [
+        UserResponse.model_construct(
+            id=user.id,
+            nickname=user.nickname,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            bio=user.bio,
+            profile_picture_url=user.profile_picture_url,
+            github_profile_url=user.github_profile_url,
+            linkedin_profile_url=user.linkedin_profile_url,
+            role=user.role,
+            email=user.email,
+            last_login_at=user.last_login_at,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            links=create_user_links(user.id, request)
+        )
+        for user in users
+    ]
+
+
+    return UserListResponse(
+        items=user_responses, 
+        total = total_users,
+        page = page,
+        size = size,
+        links = pagination_links
+    )
+
 
 @router.put("/users/{user_id}", response_model=UserResponse, name="update_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
