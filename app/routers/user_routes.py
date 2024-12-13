@@ -100,6 +100,10 @@ async def search_users(
         user = await UserService.get_by_nickname(db, nickname)
         if user:
             users = [user]
+    if email:
+        user = await UserService.get_by_email(db, email)
+        if user:
+            users = [user]
     
     
     if not users:
@@ -125,7 +129,6 @@ async def search_users(
         for user in users
     ]
 
-
     page = skip // limit + 1
     size = len(user_responses)
     total_users = len(users)
@@ -138,7 +141,6 @@ async def search_users(
         size = size,
         links = pagination_links
     )
-
 
 @router.put("/users/{user_id}", response_model=UserResponse, name="update_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
