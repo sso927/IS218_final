@@ -230,7 +230,7 @@ async def test_search_user_role(db_session):
         assert user.role == mock_role
 
 
-#testing for mismatches in different parameters
+#testing for mismatches in different parameters of email and username
 async def test_search_user_mistmatch_email_and_nickname(db_session):
     nickname = generate_nickname()
     mock_email = 'testemail@example.com'
@@ -251,10 +251,7 @@ async def test_search_user_mistmatch_email_and_nickname(db_session):
     mismatch_nickname = 'wrongnickname'
 
     retrieved_user_by_email = await UserService.get_by_email(db_session, mismatch_email)
-    retrieved_user_by_nickname = await UserService.get_by_nickname(db_session, mismatch_nickname)
-
     assert retrieved_user_by_email is None 
-    assert retrieved_user_by_nickname is None 
 
-    if retrieved_user_by_nickname or retrieved_user_by_email:
-        assert retrieved_user_by_email != retrieved_user_by_nickname
+    retrieved_user_by_nickname = await UserService.get_by_nickname(db_session, mismatch_nickname)
+    assert retrieved_user_by_nickname is None 
