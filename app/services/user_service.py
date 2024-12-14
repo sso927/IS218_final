@@ -17,6 +17,7 @@ from app.models.user_model import UserRole
 import logging
 
 from datetime import date
+from sqlalchemy import cast, Date
 
 
 settings = get_settings()
@@ -61,9 +62,14 @@ class UserService:
 
     @classmethod
     async def get_by_date(cls, db:AsyncSession, start_date: date, end_date: date):
-        stmt = select(User).filter(User.created_at >= start_date, User.created_at <= end_date)
+        stmt = select(User).filter(
+            cast(User.created_at, Date) >= start_date,
+            cast(User.created_at, Date) <= end_date
+        )        
+
         result = await db.execute(stmt)
         return result.scalars().all()
+        
 
     @classmethod
     async def create(cls, session: AsyncSession, user_data: Dict[str, str], email_service: EmailService) -> Optional[User]:
