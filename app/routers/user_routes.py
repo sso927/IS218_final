@@ -85,7 +85,7 @@ async def get_user(user_id: UUID, request: Request, db: AsyncSession = Depends(g
 # This approach not only ensures that the API is secure and efficient but also promotes a better client
 # experience by adhering to REST principles and providing self-discoverable operations.
 
-@router.put("/users/search", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+@router.post("/users/search", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
 async def search_users(
     request: Request, 
     nickname: str = Query(None, description = "Search by user's nickname."),
@@ -268,10 +268,7 @@ async def list_users(
         links=pagination_links  # Ensure you have appropriate logic to create these links
     )
 
-
-
-
-@router.get("/users/date", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+@router.post("/users/date", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
 async def filter_by_date(
     request: Request, 
     start_date: str = Query(None, description = "Insert the start date in the format: YYYY-MM-DD."),
@@ -290,7 +287,7 @@ async def filter_by_date(
         
     if end_date:
         try:
-            end_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
         except ValueError:
             raise HTTPException(status_code = 400, detail = "Invalid end date format.")
         
