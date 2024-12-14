@@ -164,7 +164,29 @@ async def test_unlock_user_account(db_session, locked_user):
 
 
 #adding new test cases
+#testing to search by user nickname 
 async def test_search_user_nickname(db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': UserRole.ADMIN.name 
+    }
+    #creating user first 
+    created_user = await UserService.create(db_session, user_data, None)
+    assert created_user is not None 
+    assert created_user.nickname == nickname
+    #retrieving/searching by nickname to see if it matches with the user in the system
+    retrieved_user = await UserService.get_by_nickname(db_session, nickname)
+    assert retrieved_user is not None 
+    assert retrieved_user.nickname == nickname 
+
+
+#testing to search by user email
+async def test_search_user_email(db_session):
     nickname = generate_nickname()
     mock_email = 'testemail@example.com'
 
@@ -177,8 +199,62 @@ async def test_search_user_nickname(db_session):
 
     created_user = await UserService.create(db_session, user_data, None)
     assert created_user is not None 
+    assert created_user.email == mock_email
+
+    retrieved_user = await UserService.get_by_email(db_session, mock_email)
+    assert retrieved_user is not None 
+    assert retrieved_user.email == mock_email 
+
+
+#testing to search by user role
+async def test_search_user_role(db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    mock_role = UserRole.ADMIN
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name
+    }
+
+    created_user = await UserService.create(db_session, user_data, None)
+    assert created_user is not None 
+    assert created_user.role == mock_role
+
+    retrieved_user = await UserService.get_by_role(db_session, mock_role)
+    assert retrieved_user is not None 
+    assert len(retrieved_user) > 0 
+    for user in retrieved_user:
+        assert user.role == mock_role
+
+
+#testing for mismatches in different parameters
+async def test_search_user_mistmatch_email_and_nickname(db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    
+    user_data = {
+        'nickname': nickname,
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': UserRole.ADMIN.name
+    }
+
+    
+    created_user = await UserService.create(db_session, user_data, None)
+    assert created_user is not None 
     assert created_user.nickname == nickname
 
-    retrieved_user = await UserService.get_by_nickname(db_session, nickname)
-    assert retrieved_user is not None 
-    assert retrieved_user.nickname == nickname 
+    mismatch_email = 'wrongtestemail@example.com'
+    mismatch_nickname = 'wrongnickname'
+
+    retrieved_user_by_email = await UserService.get_by_email(db_session, mismatch_email)
+    retrieved_user_by_nickname = await UserService.get_by_nickname(db_session, mismatch_nickname)
+
+    assert retrieved_user_by_email is None 
+    assert retrieved_user_by_nickname is None 
+
+    if retrieved_user_by_nickname or retrieved_user_by_email:
+        assert retrieved_user_by_email != retrieved_user_by_nickname
