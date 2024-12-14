@@ -275,8 +275,8 @@ async def filter_by_date(
     end_date: str = Query(None, description = "Insert the end date in the format: YYYY-MM-DD."),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
-    skip: int = Query(0, description="Number of records to skip (pagination)"),
-    limit: int = Query(10, description="Number of records to return (pagination)")
+    skip: int = Query(0, description="Number of records to skip (pagination)", include_in_schema = False),
+    limit: int = Query(10, description="Number of records to return (pagination)", include_in_schema = False)
 ):
 
     if start_date:
