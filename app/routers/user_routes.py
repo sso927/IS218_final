@@ -119,8 +119,8 @@ async def search_users(
     (email and role and not all(u.email == email and u.role == role for u in users)):
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail= 'No users found.')
    
-    unique_users = {user.id: user for user in users}.values()
-    users = list(unique_users)
+    updated_users = {user.id: user for user in users}.values()
+    users = list(updated_users)
 
     user_responses = [
         UserResponse.model_construct(

@@ -161,3 +161,24 @@ async def test_unlock_user_account(db_session, locked_user):
     assert unlocked, "The account should be unlocked"
     refreshed_user = await UserService.get_by_id(db_session, locked_user.id)
     assert not refreshed_user.is_locked, "The user should no longer be locked"
+
+
+#adding new test cases
+async def test_search_user_nickname(db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': UserRole.ADMIN.name 
+    }
+
+    created_user = await UserService.create(db_session, user_data, None)
+    assert created_user is not None 
+    assert created_user.nickname == nickname
+
+    retrieved_user = await UserService.get_by_nickname(db_session, nickname)
+    assert retrieved_user is not None 
+    assert retrieved_user.nickname == nickname 
