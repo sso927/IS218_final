@@ -93,8 +93,8 @@ async def search_users(
     role: UserRole = Query(None, description = "Search by user's role."),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_role(['ADMIN','MANAGER'])),
-    skip: int = Query(0, description="Number of records to skip (pagination)"),
-    limit: int = Query(10, description="Number of records to return (pagination)")
+    skip: int = Query(0, description="Number of records to skip (pagination)", include_in_schema = False),
+    limit: int = Query(10, description="Number of records to return (pagination)", include_in_schema = False)
     
 ):
     
