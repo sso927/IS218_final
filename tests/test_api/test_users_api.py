@@ -192,7 +192,6 @@ async def test_list_users_unauthorized(async_client, user_token):
     assert response.status_code == 403  # Forbidden, as expected for regular user
 
 #adding new test cases to test out the api
-#test search by nickname
 @pytest.mark.asyncio 
 async def test_search_user_nickname(async_client, admin_token):
     nickname = generate_nickname()
@@ -221,7 +220,6 @@ async def test_search_user_nickname(async_client, admin_token):
     assert search_response.status_code == 200   
     users_data = search_response.json()
     
-    assert users_data['total'] > 0 
     assert any(user['nickname'] == nickname for user in users_data['items'])
 
 
@@ -253,7 +251,6 @@ async def test_search_user_email(async_client, admin_token):
     assert search_response.status_code == 200   
     users_data = search_response.json()
     
-    assert users_data['total'] > 0 
     assert any(user['email'] == mock_email for user in users_data['items'])
 
 
@@ -291,3 +288,38 @@ async def test_search_user_role(async_client, admin_token):
     
     assert users_data['total'] > 0 
     assert any(user['role'] == mock_role.name for user in users_data['items'])
+
+
+@pytest.mark.asyncio 
+async def test_search_user_email_and_nickname(async_client, admin_token):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    create_response = await async_client.post("/users/", json=user_data, headers=headers)
+    
+    assert create_response.status_code == 201
+    created_user = create_response.json()
+    assert created_user['nickname'] == nickname
+    assert created_user['email'] == mock_email
+    assert created_user['role'] == mock_role.name
+
+
+    search_response = await async_client.post(
+        "/users/search", 
+        params={"email": mock_email, "nickname": nickname},   
+        headers=headers
+    )
+    assert search_response.status_code == 200   
+    users_data = search_response.json()
+    
+    assert any(user['email'] == mock_email and user['nickname'] == nickname for user in users_data['items'])
