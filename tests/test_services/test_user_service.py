@@ -8,6 +8,11 @@ from app.utils.nickname_gen import generate_nickname
 
 pytestmark = pytest.mark.asyncio
 
+#new imports for test cases
+from app.main import app
+from datetime import datetime, timedelta
+from fastapi.testclient import TestClient
+
 # Test creating a user with valid data
 async def test_create_user_with_valid_data(db_session, email_service):
     user_data = {
@@ -162,9 +167,9 @@ async def test_unlock_user_account(db_session, locked_user):
     refreshed_user = await UserService.get_by_id(db_session, locked_user.id)
     assert not refreshed_user.is_locked, "The user should no longer be locked"
 
-
-#adding new test cases
-#testing to search by user nickname 
+'''
+#these are old test cases that did not necessarily test the api directly
+#i still kept them just to see the logic, but i wanted the test cases to run through the apis
 async def test_search_user_nickname(db_session):
     nickname = generate_nickname()
     mock_email = 'testemail@example.com'
@@ -183,7 +188,7 @@ async def test_search_user_nickname(db_session):
     retrieved_user = await UserService.get_by_nickname(db_session, nickname)
     assert retrieved_user is not None 
     assert retrieved_user.nickname == nickname 
-
+'''
 
 #testing to search by user email
 async def test_search_user_email(db_session):
@@ -300,4 +305,46 @@ async def test_search_user_nickname_and_role(db_session):
     
     assert retrieved_user_by_nickname and (retrieved_user_by_nickname.role == mock_role)
 
+#test cases for other endpoint
+@pytest.fixture
+async def created_user(db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
 
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': UserRole.ADMIN.name 
+    }
+
+    created_user = await UserService.create(db_session, user_data, None)
+    return created_user
+
+
+#work in progress 
+@pytest.mark.asyncio
+async def test_filter_by_date_range(db_session, async_client, created_user):
+    user_creation_date = created_user.created_at.date()
+
+    end_date = datetime.today().date()
+    start_date = end_date - timedelta(days=365)
+
+    assert start_date <= user_creation_date <= end_date
+
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+
+
+    response = await async_client.post(
+        '/users/date',
+        params = {'start_date': start_date_str, 'end_date': end_date_str}
+    )
+
+    assert response.status_code == 200
+
+    response_data = response.json()
+
+    user_found = any(user['email'] == created_user.email for user in response_data['items'])
+
+    assert user_found
