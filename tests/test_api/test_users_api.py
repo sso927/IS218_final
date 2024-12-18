@@ -375,7 +375,7 @@ async def test_search_user_email_and_role(async_client, admin_token):
     
     assert user_found 
 
-
+from unittest.mock import patch 
 @pytest.mark.asyncio 
 async def test_search_user_nickname_and_role(async_client, admin_token):
     nickname = generate_nickname()
@@ -391,34 +391,38 @@ async def test_search_user_nickname_and_role(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
-    assert created_user['role'] == mock_role.name
 
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"nickname": nickname},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
 
-    filtered_users = [
-        user for user in users_data['items'] if user['role'] == mock_role.name
-    ]
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+            
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
 
-    user_found = False
-    for user in filtered_users:
-        if user['nickname'] == nickname and user['role'] == mock_role.name:
-            user_found = True 
-            break 
-    
-    assert user_found 
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"nickname": nickname},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
+
+        filtered_users = [
+            user for user in users_data['items'] if user['role'] == mock_role.name
+        ]
+
+        user_found = False
+        for user in filtered_users:
+            if user['nickname'] == nickname and user['role'] == mock_role.name:
+                user_found = True 
+                break 
+        
+        assert user_found 
 
 #test case for other api endpoint 
 @pytest.mark.asyncio
@@ -437,12 +441,16 @@ async def test_filter_by_date_range(async_client, admin_token, db_session):
     
     #note - creating new user in the database
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
-    assert created_user['role'] == mock_role.name
+
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
 
     #filtering to get the date the user was created 
     stmt = select(User).filter_by(email=mock_email) 

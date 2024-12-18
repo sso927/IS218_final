@@ -303,5 +303,4 @@ async def test_search_user_nickname_and_role(db_session):
     retrieved_user_by_nickname = await UserService.get_by_nickname(db_session, nickname)
     
     assert retrieved_user_by_nickname and (retrieved_user_by_nickname.role == mock_role)
-
 '''
