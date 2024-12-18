@@ -576,3 +576,50 @@ async def test_filter_by_incorrect_end_date(async_client, admin_token, db_sessio
     )
 
     assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_filter_start_date_after_end_date(async_client, admin_token, db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemailstartafterend@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+    
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
+
+    stmt = select(User).filter_by(email=mock_email) 
+    result = await db_session.execute(stmt) 
+    user_in_db = result.scalars().first()
+
+    user_creation_date = user_in_db.created_at.date()
+
+    end_date = datetime.today().date()
+    start_date_past_end =  (datetime.today().date() + timedelta(days=1)).strftime('%Y-%m-%d')
+
+    assert start_date_past_end > end_date.strftime('%Y-%m-%d')
+
+
+    response = await async_client.post(
+        '/users/date',
+        params = {'start_date': start_date_past_end, 'end_date': end_date},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+    assert response.status_code == 400
