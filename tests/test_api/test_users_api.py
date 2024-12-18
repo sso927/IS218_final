@@ -199,7 +199,7 @@ async def test_list_users_unauthorized(async_client, user_token):
 @pytest.mark.asyncio 
 async def test_search_user_nickname(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailnickname@example.com'
 
     user_data = {
         'nickname': nickname, 
@@ -230,7 +230,7 @@ async def test_search_user_nickname(async_client, admin_token):
 @pytest.mark.asyncio 
 async def test_search_user_email(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailemail@example.com'
 
     user_data = {
         'nickname': nickname, 
@@ -261,7 +261,7 @@ async def test_search_user_email(async_client, admin_token):
 @pytest.mark.asyncio 
 async def test_search_user_role(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailrole@example.com'
     mock_role = UserRole.ADMIN
 
 
@@ -297,7 +297,7 @@ async def test_search_user_role(async_client, admin_token):
 @pytest.mark.asyncio 
 async def test_search_user_email_and_nickname(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailemailandnickname@example.com'
     mock_role = UserRole.ADMIN
 
 
@@ -332,7 +332,7 @@ async def test_search_user_email_and_nickname(async_client, admin_token):
 @pytest.mark.asyncio 
 async def test_search_user_email_and_role(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailemailandrole@example.com'
     mock_role = UserRole.ADMIN
 
 
@@ -379,7 +379,7 @@ from unittest.mock import patch
 @pytest.mark.asyncio 
 async def test_search_user_nickname_and_role(async_client, admin_token):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailnicknameandrole@example.com'
     mock_role = UserRole.ADMIN
 
 
@@ -391,7 +391,7 @@ async def test_search_user_nickname_and_role(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-
+    #using mock tests to prevent too many emails from being sent in the test cases to the apis endpoints bc this will cause errors
     with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
         mock_send_email.return_value = None
 
@@ -428,7 +428,7 @@ async def test_search_user_nickname_and_role(async_client, admin_token):
 @pytest.mark.asyncio
 async def test_filter_by_date_range(async_client, admin_token, db_session):
     nickname = generate_nickname()
-    mock_email = 'testemail@example.com'
+    mock_email = 'testemailsuccessfuldaterange@example.com'
     mock_role = UserRole.ADMIN
 
 
@@ -481,3 +481,98 @@ async def test_filter_by_date_range(async_client, admin_token, db_session):
     user_found = any(user['email'] == created_user['email'] for user in response_data['items'])
 
     assert user_found
+
+@pytest.mark.asyncio
+async def test_filter_by_incorrect_start_date(async_client, admin_token, db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemailincorrectstartdate@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+    
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
+
+    stmt = select(User).filter_by(email=mock_email) 
+    result = await db_session.execute(stmt) 
+    user_in_db = result.scalars().first()
+
+    user_creation_date = user_in_db.created_at.date()
+
+    end_date = datetime.today().date()
+    start_date_wrong = "2025-14-32"
+
+    assert start_date_wrong != user_creation_date
+    end_date_str = end_date.strftime('%Y-%m-%d')
+
+
+    response = await async_client.post(
+        '/users/date',
+        params = {'start_date': start_date_wrong, 'end_date': end_date_str},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_filter_by_incorrect_end_date(async_client, admin_token, db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemailincorrectenddate@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+    
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
+
+    stmt = select(User).filter_by(email=mock_email) 
+    result = await db_session.execute(stmt) 
+    user_in_db = result.scalars().first()
+
+    user_creation_date = user_in_db.created_at.date()
+
+    end_date_wrong = "20215-112-331"
+    start_date = datetime.today().date()
+
+    assert end_date_wrong != user_creation_date
+    start_date_str = start_date.strftime('%Y-%m-%d')
+
+
+    response = await async_client.post(
+        '/users/date',
+        params = {'start_date': start_date, 'end_date': end_date_wrong},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+    assert response.status_code == 400
