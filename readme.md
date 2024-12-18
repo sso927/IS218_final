@@ -1,5 +1,5 @@
 # IS218 Final Project
-#### Sharon Oh 
+#### Sharon Oh | Fall 2024 | IS218001
 
 #### [DockerHub Link](https://hub.docker.com/repository/docker/sso92327/wis_club_api/general) 
 
