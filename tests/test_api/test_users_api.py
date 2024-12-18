@@ -9,6 +9,8 @@ from app.services.jwt_service import decode_token  # Import your FastAPI app
 from datetime import datetime, timedelta
 from tests.conftest import db_session
 from sqlalchemy.future import select 
+from unittest.mock import patch 
+
 
 
 # Example of a test function using the async_client fixture
@@ -209,22 +211,25 @@ async def test_search_user_nickname(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
 
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"nickname": nickname},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
-    assert any(user['nickname'] == nickname for user in users_data['items'])
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"nickname": nickname},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
+        assert any(user['nickname'] == nickname for user in users_data['items'])
 
 
 @pytest.mark.asyncio 
@@ -240,22 +245,25 @@ async def test_search_user_email(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
 
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"email": mock_email},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
-    assert any(user['email'] == mock_email for user in users_data['items'])
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"email": mock_email},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
+        assert any(user['email'] == mock_email for user in users_data['items'])
 
 
 @pytest.mark.asyncio 
@@ -273,25 +281,28 @@ async def test_search_user_role(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
-    assert created_user['role'] == mock_role.name
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
 
 
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"role": mock_role.name},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
-    assert users_data['total'] > 0 
-    assert any(user['role'] == mock_role.name for user in users_data['items'])
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"role": mock_role.name},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
+        assert users_data['total'] > 0 
+        assert any(user['role'] == mock_role.name for user in users_data['items'])
 
 
 @pytest.mark.asyncio 
@@ -309,24 +320,27 @@ async def test_search_user_email_and_nickname(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
-    assert created_user['role'] == mock_role.name
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
+
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
 
 
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"email": mock_email, "nickname": nickname},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
-    assert any(user['email'] == mock_email and user['nickname'] == nickname for user in users_data['items'])
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"email": mock_email, "nickname": nickname},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
+        assert any(user['email'] == mock_email and user['nickname'] == nickname for user in users_data['items'])
 
 
 @pytest.mark.asyncio 
@@ -344,36 +358,39 @@ async def test_search_user_email_and_role(async_client, admin_token):
     }
 
     headers = {"Authorization": f"Bearer {admin_token}"}
-    create_response = await async_client.post("/users/", json=user_data, headers=headers)
-    
-    assert create_response.status_code == 201
-    created_user = create_response.json()
-    assert created_user['nickname'] == nickname
-    assert created_user['email'] == mock_email
-    assert created_user['role'] == mock_role.name
+    with patch('app.services.email_service.EmailService.send_verification_email') as mock_send_email:
+        mock_send_email.return_value = None
 
-    #mental note - first searching by users (since the email has to be unique to one user)
-    search_response = await async_client.post(
-        "/users/search", 
-        params={"email": mock_email},   
-        headers=headers
-    )
-    assert search_response.status_code == 200   
-    users_data = search_response.json()
-    
+        create_response = await async_client.post("/users/", json=user_data, headers=headers)
+        
+        assert create_response.status_code == 201
+        created_user = create_response.json()
+        assert created_user['nickname'] == nickname
+        assert created_user['email'] == mock_email
+        assert created_user['role'] == mock_role.name
 
-    filtered_users = [
-        user for user in users_data['items'] if user['role'] == mock_role.name
-    ]
+        #mental note - first searching by users (since the email has to be unique to one user)
+        search_response = await async_client.post(
+            "/users/search", 
+            params={"email": mock_email},   
+            headers=headers
+        )
+        assert search_response.status_code == 200   
+        users_data = search_response.json()
+        
 
-    #making sure that the role matches with the user, so that both conditions are met
-    user_found = False
-    for user in filtered_users:
-        if user['email'] == mock_email and user['role'] == mock_role.name:
-            user_found = True 
-            break 
-    
-    assert user_found 
+        filtered_users = [
+            user for user in users_data['items'] if user['role'] == mock_role.name
+        ]
+
+        #making sure that the role matches with the user, so that both conditions are met
+        user_found = False
+        for user in filtered_users:
+            if user['email'] == mock_email and user['role'] == mock_role.name:
+                user_found = True 
+                break 
+        
+        assert user_found 
 
 from unittest.mock import patch 
 @pytest.mark.asyncio 
