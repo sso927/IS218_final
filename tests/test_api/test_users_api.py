@@ -6,6 +6,10 @@ from app.models.user_model import User, UserRole
 from app.utils.nickname_gen import generate_nickname
 from app.utils.security import hash_password
 from app.services.jwt_service import decode_token  # Import your FastAPI app
+from datetime import datetime, timedelta
+from tests.conftest import db_session
+from sqlalchemy.future import select 
+
 
 # Example of a test function using the async_client fixture
 @pytest.mark.asyncio
@@ -415,3 +419,57 @@ async def test_search_user_nickname_and_role(async_client, admin_token):
             break 
     
     assert user_found 
+
+#test case for other api endpoint 
+@pytest.mark.asyncio
+async def test_filter_by_date_range(async_client, admin_token, db_session):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+    
+    #note - creating new user in the database
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    create_response = await async_client.post("/users/", json=user_data, headers=headers)
+    assert create_response.status_code == 201
+    created_user = create_response.json()
+    assert created_user['nickname'] == nickname
+    assert created_user['email'] == mock_email
+    assert created_user['role'] == mock_role.name
+
+    #filtering to get the date the user was created 
+    stmt = select(User).filter_by(email=mock_email) 
+    result = await db_session.execute(stmt) 
+    user_in_db = result.scalars().first()
+
+    #retrieves the date of creation from the database
+    user_creation_date = user_in_db.created_at.date()
+
+    end_date = datetime.today().date()
+    start_date = end_date - timedelta(days=365)
+
+    assert start_date <= user_creation_date <= end_date
+
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+
+
+    response = await async_client.post(
+        '/users/date',
+        params = {'start_date': start_date_str, 'end_date': end_date_str},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+    assert response.status_code == 200
+
+    response_data = response.json()
+    user_found = any(user['email'] == created_user['email'] for user in response_data['items'])
+
+    assert user_found
