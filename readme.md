@@ -1,144 +1,15 @@
+# IS218 Final Project
+#### Sharon Oh 
+
+#### [DockerHub Link](https://hub.docker.com/repository/docker/sso92327/wis_club_api/general) 
+
+![DockerHub Screenshot](dockerhub.png)
+
+I took IS218 during my Fall 2024 semester at NJIT. This course was quite a challenging and difficult course for me. It was probably the hardest course I’ve had all semester. As someone who does not have much prior experience coding or using various databases or programs like Docker, Linux, etc, I was in an unfamiliar situation and often felt discouraged, stressed, and burnt out. It was hard being in this course because of the challenges with time management and just staying resilient throughout the different projects we had to do. Through trial and error and testing out different solutions, I was able to get everything to work out at the end. I felt like giving up a lot of the time, but with the assistance of the professor, online resources, my own self-learning, and constantly asking questions, I was able to learn a lot throughout this course and increase my knowledge in programming. Coding has never been a strong suit of mine and I only have about a year’s worth of coding knowledge with pretty a basic foundation in Python, HTML and CSS. Utilizing a bunch of other things like pandas, Docker, APIs, and more throughout the course was a lot harder to grasp and balance. Yet, my knowledge from the beginning of this course till now has grown tremendously and I now know how to deal with user management systems, fix issues and bugs to ensure quality in the code, use environment variables, logging, test cases, GitHub Actions, and more. While the journey was very difficult, I can say that my knowledge and understanding with programming has developed. Furthermore, my experience working on this final project was quite difficult. This final project deals with creating new features for a user management system and implementing different test cases to test that feature. Using different things like Docker, APIs, PGAdmin, and the openapi spec doc was hard to figure out. I think that the previous homework assignment has helped a lot though. It prepared me well for this final and made me feel less overwhelmed, so that way I could focus on creating new API endpoints for my feature and developing test cases. Having that prior experience was definitely helpful for this project. The hardest thing about working on this project was staying motivated even when I kept getting errors or bugs. I would solve one bug and test it and then it would create another issue. I would fix that issue which would then create another issue. Oftentimes, it felt like I was not making any progress, but by staying resilient and patient, I was able to get everything to work out. I think it was also difficult because I should've started earlier than I did. Time management is always important, but especially for this project, I realized the importance of it because I could’ve asked more questions if I had started earlier. This would’ve helped me deal with a lot of the confusion early on. Thankfully, emailing the professor and doing my own learning helped me get more clarity. Additionally, throughout the course of the project, I took notes on the side to make sure I was updated with the status of my project and its requirements. By also making detailed commits, I stayed organized with my work. 
+
+For the final project, the feature that I decided to implement in this system was a user search and filtering system so that users can be searched based on specific criteria such as their email, nickname, role, or by date range. These API endpoints are specific to the admin and managers, so they are able to see the various users in the database that fit the criteria. For this, I created 2 new endpoints. The first endpoint was dealing with search functionality that allowed users to be obtained by their email, nickname, or role. This endpoint includes 3 different field/search parameters, 2 where you can type and 1 where you can dropdown a menu to select a role. Users can be searched by a singular search parameter or by multiple parameters. However, if searched with multiple parameters, only users that fit all of the criteria will be displayed. If none of the inputs match any of the users, there will be a display message saying that there is no user. The second endpoint was to filter users based on registration date (this option seemed more feasible than the other option of account status, which is why I choose to implement this aspect). With this feature, you can insert a start date and end date in the format of YEAR-MONTH-DAY to search for users created within a certain time frame. It checks for a valid input and a logical time before it begins searching for the users. This feature utilizes the database information to see the “created_at” timestamp and then displays the users within the provided time range. I created 10 test cases for different scenarios regarding these endpoints. The test cases are as follows: (1) Searching by user’s nickname, (2) Searching by user’s email, (3) Searching by user’s role, (4) Searching by user’s email and nickname, (5) Searching by user’s email and role, (6) Searching by user’s nickname and role, (7) Filtering by date successfully, (8) Filtering by incorrect start date, (9) Filtering by incorrect end date, (10) Filtering by start date after end date. These test cases cover different edge cases and scenarios to cover various situations. I went from 93 test cases to 103 test cases and ran pytest to make sure that everything worked as planned. To go into a bit more detail, I created the new API endpoints in the user_routes.py file, similar to the format of the already existing endpoints, to ensure consistency. I utilized already existing functions in the UserService and implemented them into this new endpoint. I chose to do POST for the HTTP method because it was already used, so I knew it would work well and also because POST is good for retrieving data that have complex queries involving numerous parameters. I believed it was better for more complex filtering, so I decided to implement that. Additionally, I made sure the responses from these endpoints were in a consistent format with the other endpoints, and that the output followed pagination patterns that were also seen in this file. Regarding the test cases, I had initially created them in the test_user_service.py file and had it structured to test the backend logic and functions of the program. I realized later on that while these tests passed, they weren’t directly testing the API endpoint, which was more important to make sure that it works. After this realization, I moved my test cases to the test_users_api.py file where I tested the features directly using the API endpoints. For the majority of these tests, I created a new user using the already existing endpoint that creates new users, asserted the user, and then searched or filtered for that user to retrieve the right information. By creating the users and querying them in the database, I am testing the full functionality of the program. This ensures that all of the components work as expected, simulating real-world usage by validating both the user creation and retrieval of the user based on different parameters. Another example of where I had to pivot was when I was getting errors from the pytest stating that there was an issue with Mailtrap. I was having too many emails sent out during the test runs, since it utilized the create user endpoint and actually sent out emails. I solved this issue by using mock tests and patches to prevent emails from being sent out externally. This allowed me to still test the APIs but get rid of the emails being sent out automatically. 
+
+Overall, while this project was quite challenging and had me solve various problems in different ways, I think it was a good way to apply all my knowledge and skills from this course. Being able to complete this project was very satisfying and I am proud that I was able to practice more programming and increase my knowledge, despite all the difficulties, throughout this course. 
 
 
-# The User Management System Final Project: Your Epic Coding Adventure Awaits! 🎉✨🔥
 
-## Introduction: Buckle Up for the Ride of a Lifetime 🚀🎬
-
-Welcome to the User Management System project! 🏫👨‍🏫⭐ This project is your gateway to coding glory, providing a bulletproof foundation for a user management system that will blow your mind! 🤯 You'll bridge the gap between the realms of seasoned software pros and aspiring student developers like yourselves. 
-
-### [Instructor Video - Project Overview and Tips](https://youtu.be/gairLNAp6mA) 🎥
-
-- [Introduction to the system features and overview of the project - please read](system_documentation.md) 📚
-- [Project Setup Instructions](setup.md) ⚒️
-- [Features to Select From](features.md) 🛠️
-- [About the Project](about.md)🔥🌟
-
-## Goals and Objectives: Unlock Your Coding Superpowers 🎯🏆🌟
-
-Get ready to ascend to new heights with this legendary project:
-
-1. **Practical Experience**: Dive headfirst into a real-world codebase, collaborate with your teammates, and contribute to an open-source project like a seasoned pro! 💻👩‍💻🔥
-2. **Quality Assurance**: Develop ninja-level skills in identifying and resolving bugs, ensuring your code quality and reliability are out of this world. 🐞🔍⚡
-3. **Test Coverage**: Write additional tests to cover edge cases, error scenarios, and important functionalities - leave no stone unturned and no bug left behind! ✅🧪🕵️‍♂️
-4. **Feature Implementation**: Implement a brand new, mind-blowing feature and make your epic mark on the project, following best practices for coding, testing, and documentation like a true artisan. ✨🚀🎆
-5. **Collaboration**: Foster teamwork and collaboration through code reviews, issue tracking, and adhering to contribution guidelines - teamwork makes the dream work, and together you'll conquer worlds! 🤝💪🌍
-6. **Industry Readiness**: Prepare for the software industry by working on a project that simulates real-world development scenarios - level up your skills to super hero status  and become an unstoppable coding force! 🔝🚀🏆⚡
-
-## Managing the Project Workload: Stay Focused, Stay Victorious ⏱️🧠⚡
-
-This project requires effective time management and a well-planned strategy, but fear not - you've got this! Follow these steps to ensure a successful (and sane!) project outcome:
-
-1. **Select a Feature**: [Choose a feature](features.md) from the provided list of additional improvements that sparks your interest and aligns with your goals like a laser beam. ✨⭐🎯 This is your chance to shine!
-
-2. **Test Coverage Improvement**: Review the existing test suite and identify gaps in test coverage like a pro. Create 10 additional tests to cover edge cases, error scenarios, and important functionalities related to your chosen feature. Focus on areas such as user registration, login, authorization, and database interactions. Simulate the setup of the system as the admin user, then creating users, and updating user accounts - leave no stone unturned, no bug left behind! ✅🧪🔍🔬 Become the master of testing!
-
-3. **New Feature Implementation**: Implement your chosen feature, following the project's coding practices and architecture like a coding ninja. Write appropriate tests to ensure your new feature is functional and reliable like a rock. Document the new feature, including its usage, configuration, and any necessary migrations - future you will thank you profusely! 🚀✨📝👩‍💻⚡ Make your mark on this project!
-
-4. **Maintain a Working Main Branch**: Throughout the project, ensure you always have a working main branch deploying to Docker like a well-oiled machine. This will prevent any last-minute headaches and ensure a smooth submission process - no tears allowed, only triumphs! 😊🚢⚓ Stay focused, stay victorious!
-
-## Commands
-
-1. Start and build a multi-container application:
-
-```
-docker compose up --build
-```
-
-2. Goto http://localhost/docs to view openapi spec documentation
-
-Click "authorize" input username: `admin@example.com` password: `secret`
-
-3. Goto http://localhost:5050 to connect and manage the database.
-
-The following information must match the ones in the `docker-compose.yml` file.
-
-Login:
-
-- Email address / Username: `admin@example.com`
-- Password: `adminpassword`
-
-When add new server:
-
-- Host name/address: `postgres`
-- Port: `5432`
-- Maintenance database: `myappdb`
-- Username: `user`
-- Password: `password`
-
-## Optional Commands
-
-### Run `pytest` inside the containers:
-
-Run all tests:
-
-```
-docker compose exec fastapi pytest
-```
-
-Run a single test:
-
-```
-docker compose exec fastapi pytest tests/test_services/test_user_service.py::test_list_users
-```
-
-### Creating database migration:
-
-```
-docker compose exec fastapi alembic revision --autogenerate -m 'added admin'
-```
-
-
-### Apply database migrations:
-
-```
-docker compose exec fastapi alembic upgrade head
-```
-
-
-## Submission and Grading: Your Chance to Shine 📝✏️📈
-
-1. **Reflection Document**: Write a document file (`.md` file, at least 400 words) reflecting on your learnings throughout the course and your experience working on this epic project. Include **10 NEW tests, and 1 Feature** you'll be graded on. Make sure your project successfully deploys to DockerHub and include a link to your Docker repository in the document - let your work speak for itself! 📄🔗💥
-
-2. **Commit History**: Show off your consistent hard work through your commit history like a true coding warrior. **Projects with less than 10 commits will get an automatic 0 - ouch!** 😬⚠️ A significant part of your project's evaluation will be based on your use of issues, commits, and following a professional development process like a boss - prove your coding prowess! 💻🔄🔥
-
-3. **Deployability**: Broken projects that don't deploy to Dockerhub or pass all the automated tests on GitHub actions will face point deductions - nobody likes a buggy app! 🐞☠️ Show the world your flawless coding skills!
-
-### Grading Rubric: (100 Points)
-
-#### 1. Reflection Document (20 Points)
-
-- 10 Points: Quality and completeness of the reflection document, including insights into learnings, challenges faced, and how they were overcome. Must meet the minimum word count (400 words).
-- 5 Points: Clear and detailed description of the new feature implemented, including its purpose, usage, and configuration.
-- 5 Points: Inclusion of DockerHub deployment link and evidence of successful deployment.
-
-#### 2. Commit History and Professional Development Process (20 Points)
-
-- 20 Points: Consistent commit history with meaningful commit messages. Projects with fewer than 10 commits receive 0 points in this category.
-
-
-#### 3. Test Coverage and Quality Assurance (30 Points)
-
-- 15 Points: Quality and thoroughness of 10 new test cases, covering edge cases, error scenarios, and critical functionalities.
-- 10 Points: New test cases must integrate well with the existing test suite and pass on GitHub Actions.
-- 5 Points: Tests demonstrate creativity and critical thinking, ensuring robust quality assurance for both existing and new features.
-
-#### 4. New Feature Implementation (30 Points)
-
-- 15 Points: Functionality and reliability of the new feature, including adherence to project coding standards and architecture.
-- 10 Points: Tests written for the new feature ensure it works as intended and handles edge cases.
-- 5 Points: Documentation of the new feature, including its purpose, configuration, and any necessary migrations.
-
-#### 5. Deployability (20 Points)
-
-- 10 Points: Working deployment to DockerHub, with no critical issues or broken functionalities.
-- 10 Points: Maintains a clean and functional main branch throughout the project lifecycle.
-
-### Notes:
-
-This is our final assignment. You have two weeks to complete it, and late submissions will not be accepted.
-
-Remember, it's more important to make something work reliably and be reasonably complete than to implement an overly complex feature. Focus on creating a feature that you can build upon or demonstrate in an interview setting - show off your skills like a rockstar! 💪🚀🎓
-
-Don't forget to always have a working main branch deploying to Docker at all times. If you always have a working main branch, you will never be in jeopardy of receiving a very disappointing grade :-). Keep that main branch shining bright!
-
-Let's embark on this epic coding adventure together and conquer the world of software engineering! You've got this, coding rockstars! 🚀🌟✨
