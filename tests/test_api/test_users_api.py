@@ -195,7 +195,7 @@ async def test_list_users_unauthorized(async_client, user_token):
     )
     assert response.status_code == 403  # Forbidden, as expected for regular user
 
-#adding new test cases to test out the api
+#NEW TEST CASES
 @pytest.mark.asyncio 
 async def test_search_user_nickname(async_client, admin_token):
     nickname = generate_nickname()
