@@ -188,7 +188,7 @@ async def test_search_user_nickname(db_session):
     retrieved_user = await UserService.get_by_nickname(db_session, nickname)
     assert retrieved_user is not None 
     assert retrieved_user.nickname == nickname 
-'''
+
 
 #testing to search by user email
 async def test_search_user_email(db_session):
@@ -233,6 +233,8 @@ async def test_search_user_role(db_session):
     assert len(retrieved_user) > 0 
     for user in retrieved_user:
         assert user.role == mock_role
+'''
+
 
 #mental notes:
 #testing to make sure that multiple fields match one user so that when 
