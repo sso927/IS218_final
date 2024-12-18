@@ -233,7 +233,7 @@ async def test_search_user_role(db_session):
     assert len(retrieved_user) > 0 
     for user in retrieved_user:
         assert user.role == mock_role
-'''
+
 
 
 #mental notes:
@@ -259,6 +259,7 @@ async def test_search_user_email_and_nickname(db_session):
     
     retrieved_user_by_email = await UserService.get_by_email(db_session, mock_email)
     assert retrieved_user_by_email and (retrieved_user_by_email.nickname == nickname)
+
 
 async def test_search_user_email_and_role(db_session):
     nickname = generate_nickname()
@@ -307,6 +308,7 @@ async def test_search_user_nickname_and_role(db_session):
     
     assert retrieved_user_by_nickname and (retrieved_user_by_nickname.role == mock_role)
 
+ '''
 #test cases for other endpoint
 @pytest.fixture
 async def created_user(db_session):

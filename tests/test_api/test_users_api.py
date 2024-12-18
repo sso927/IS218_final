@@ -323,3 +323,95 @@ async def test_search_user_email_and_nickname(async_client, admin_token):
     users_data = search_response.json()
     
     assert any(user['email'] == mock_email and user['nickname'] == nickname for user in users_data['items'])
+
+
+@pytest.mark.asyncio 
+async def test_search_user_email_and_role(async_client, admin_token):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    create_response = await async_client.post("/users/", json=user_data, headers=headers)
+    
+    assert create_response.status_code == 201
+    created_user = create_response.json()
+    assert created_user['nickname'] == nickname
+    assert created_user['email'] == mock_email
+    assert created_user['role'] == mock_role.name
+
+    #mental note - first searching by users (since the email has to be unique to one user)
+    search_response = await async_client.post(
+        "/users/search", 
+        params={"email": mock_email},   
+        headers=headers
+    )
+    assert search_response.status_code == 200   
+    users_data = search_response.json()
+    
+
+    filtered_users = [
+        user for user in users_data['items'] if user['role'] == mock_role.name
+    ]
+
+    #making sure that the role matches with the user, so that both conditions are met
+    user_found = False
+    for user in filtered_users:
+        if user['email'] == mock_email and user['role'] == mock_role.name:
+            user_found = True 
+            break 
+    
+    assert user_found 
+
+
+@pytest.mark.asyncio 
+async def test_search_user_nickname_and_role(async_client, admin_token):
+    nickname = generate_nickname()
+    mock_email = 'testemail@example.com'
+    mock_role = UserRole.ADMIN
+
+
+    user_data = {
+        'nickname': nickname, 
+        'email': mock_email,
+        'password': 'ValidPassword123',
+        'role': mock_role.name 
+    }
+
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    create_response = await async_client.post("/users/", json=user_data, headers=headers)
+    
+    assert create_response.status_code == 201
+    created_user = create_response.json()
+    assert created_user['nickname'] == nickname
+    assert created_user['email'] == mock_email
+    assert created_user['role'] == mock_role.name
+
+    search_response = await async_client.post(
+        "/users/search", 
+        params={"nickname": nickname},   
+        headers=headers
+    )
+    assert search_response.status_code == 200   
+    users_data = search_response.json()
+    
+
+    filtered_users = [
+        user for user in users_data['items'] if user['role'] == mock_role.name
+    ]
+
+    user_found = False
+    for user in filtered_users:
+        if user['nickname'] == nickname and user['role'] == mock_role.name:
+            user_found = True 
+            break 
+    
+    assert user_found 
